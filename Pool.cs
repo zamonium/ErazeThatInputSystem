@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,102 +5,62 @@ namespace MFE.Eraze
 {
 	public class Pool : MonoBehaviour
 	{
-		#region Variables
-
-		[SerializeField]
-		protected GameObject m_goReference;
-
-		[SerializeField]
-		private int m_iMaxPool;
-
-		private GameObject[] pool;
-		private bool[] freeElements;//true means free
-		#endregion
-
-		public bool CanGetElement { get { return getFreeElement() >= 0; } }
-
-
 		protected virtual void Start()
 		{
-			pool = new GameObject[m_iMaxPool];
-			freeElements = new bool[m_iMaxPool];
+			m_dPool = new Dictionary<GameObject, bool>(m_iMaxPool);
+			
 			for (int i = 0; i < m_iMaxPool; i++)
 			{
-				pool[i] = Instantiate(m_goReference, gameObject.transform);
-				pool[i].name += i;
-				pool[i].SetActive(false);
-				freeElements[i] = true;
+				GameObject obj = Instantiate(m_goReference, gameObject.transform);
+				obj.name += i;
+				obj.SetActive(false);
+				
+				m_dPool.Add(obj, true);//true means free
 			}
 		}
 
 		public void RestoreAll()
 		{
-			for (int i = 0; i < m_iMaxPool; i++)
-			{
-				if (pool[i].activeInHierarchy)
+			foreach(GameObject go in m_dPool.Keys)
+            {
+				if (go.activeInHierarchy)
 				{
-					Restore(i);
+					RestoreElement(go);
 				}
-			}
+            }
 		}
 
 		public void RestoreElement(GameObject goToBeRestored)
 		{
-			for (int i = 0; i < m_iMaxPool; i++)
+			if (goToBeRestored.activeInHierarchy && !m_dPool[goToBeRestored])
 			{
-				if (pool[i].activeInHierarchy && pool[i] == goToBeRestored)
-				{
-					Restore(i);
-
-					return;
-				}
+				goToBeRestored.SetActive(false);
+				goToBeRestored.transform.parent = gameObject.transform;
+				m_dPool[goToBeRestored] = true;
 			}
-
-			Debug.Log("Element not found");
+            else
+            {
+				Debug.Log("Element not active");
+            }
 		}
 
-		private void Restore(int iIndex)
+		public void RestoreElements(DisableCollision[] akToRestore)
 		{
-			pool[iIndex].SetActive(false);
-			pool[iIndex].transform.parent = gameObject.transform;
-			freeElements[iIndex] = true;
-		}
-
-		public void RestoreElements(DisableCollision[] list)
-		{
-			foreach (DisableCollision go in list)
+			foreach (DisableCollision go in akToRestore)
 			{
-				int i = FindElement(go.name);
+				RestoreElement(go.gameObject);
 
-				if (i != -1)
-				{
-					Restore(i);
-
-					go.SimulatePhysics(0);
-				}
-				else
-					Debug.Log("Element not found");
+				go.SimulatePhysics(0);
 			}
-		}
-
-		private int FindElement(string sName)
-		{
-			for (int i = 0; i < m_iMaxPool; i++)
-			{
-				if (pool[i] && pool[i].name == sName)
-				{
-					return i;
-				}
-			}
-
-			return -1;
 		}
 
 		public bool GetElement(Vector3 vPosition, Transform tParent = null)
 		{
-			//check if there is free elements
-			int indexFreeElement = getFreeElement();
-			if (indexFreeElement == -1)
+			//check if the pool has free elements
+			//if so set active
+
+			GameObject go = GetFreeElement();
+			if (go == null)
 			{
 				Debug.Log("No more elements in the pool\n");
 
@@ -109,47 +68,60 @@ namespace MFE.Eraze
 			}
 			else
 			{
-				freeElements[indexFreeElement] = false;
+				m_dPool[go] = false;
 
-				pool[indexFreeElement].transform.position = vPosition;
+				go.transform.position = vPosition;
 
 				if (tParent)
-					pool[indexFreeElement].transform.parent = tParent;
+					go.transform.parent = tParent;
 
-				pool[indexFreeElement].SetActive(true);
+				go.SetActive(true);
 
 				return true;
-
 			}
 		}
 
 		public GameObject GetElement()
 		{
-			int indexFreeElement = getFreeElement();
-			if (indexFreeElement == -1)
+			GameObject goFreeElement = GetFreeElement();
+			if (goFreeElement == null)
 			{
 				Debug.Log("No more elements in the pool\n");
 				return null;
 			}
 			else
 			{
-				freeElements[indexFreeElement] = false;
+				m_dPool[goFreeElement] = false;
 
-				pool[indexFreeElement].SetActive(true);
+				goFreeElement.SetActive(true);
 
-				return pool[indexFreeElement];
+				return goFreeElement;
 			}
 		}
 
-		private int getFreeElement()
+		private GameObject GetFreeElement()
 		{
-			for (int i = 0; i < m_iMaxPool; i++)
+			foreach(GameObject go in m_dPool.Keys)
 			{
-				if (freeElements[i])
-					return i;
+				if (m_dPool[go])
+					return go;
 			}
 
-			return -1;
+			return null;
 		}
+
+		#region Variables & Properties
+
+		public bool CanGetElement { get { return GetFreeElement() != null; } }
+
+		[SerializeField]
+		protected GameObject m_goReference;
+
+		private Dictionary<GameObject, bool> m_dPool;
+
+		[SerializeField]
+		private int m_iMaxPool;
+
+		#endregion
 	}
 }

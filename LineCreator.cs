@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,43 +5,11 @@ namespace MFE.Eraze
 {
     public class LineCreator : MonoBehaviour
     {
-        private Pool m_kPool;
-
-        private LineRenderer m_kLineRenderer;
-        private EdgeCollider2D m_kEdgeCollider;
-
-        private List<Vector2> m_lv2FingerPosition;
-
-        private bool m_bDrawing;
-        private Vector2 m_v2Direction;
-        private eGesture m_eDirection;
-
-        [SerializeField]
-        bool bDinamicCreation;
-
-        [SerializeField]
-        private bool m_bNormalLength;
-
-        [HideInInspector]
-        public float m_fCurrentLength;
-
-        [Header("Anchors")]
-        [SerializeField]
-        private bool bAnchors;
-        [SerializeField]
-        private GameObject m_goAnchor;
-
-        public float currentY { get { return m_lv2FingerPosition[0].y; } }
-
-
         void Awake()
         {
             m_lv2FingerPosition = new List<Vector2>();
 
             m_fCurrentLength = m_bNormalLength ? GameData.LaneDistance : GameData.LaneDistance / 2;
-
-            m_kLineRenderer = GetComponent<LineRenderer>();
-            m_kEdgeCollider = GetComponent<EdgeCollider2D>();
         }
 
         private void Update()
@@ -76,7 +43,7 @@ namespace MFE.Eraze
 
                     m_kEdgeCollider.points = m_lv2FingerPosition.ToArray();
 
-                    if (bAnchors)
+                    if (m_bAnchors)
                         m_goAnchor.transform.position = m_lv2FingerPosition[1] + Vector2.down * 0.05f;
 
                     m_bDrawing = false;
@@ -88,10 +55,13 @@ namespace MFE.Eraze
         {
             m_kPool = kPool;
 
+            m_kLineRenderer = GetComponent<LineRenderer>();
+            m_kEdgeCollider = GetComponent<EdgeCollider2D>();
+
             m_lv2FingerPosition.Clear();
             m_lv2FingerPosition.Add(v2NewPosition);
 
-            if (bDinamicCreation)
+            if (m_bDinamicCreation)
             {
                 m_lv2FingerPosition.Add(v2NewPosition);
 
@@ -125,7 +95,7 @@ namespace MFE.Eraze
 
                 m_kEdgeCollider.points = m_lv2FingerPosition.ToArray();
 
-                if (bAnchors)
+                if (m_bAnchors)
                     m_goAnchor.transform.position = m_lv2FingerPosition[1] + Vector2.down * 0.05f;
             }
         }
@@ -154,5 +124,35 @@ namespace MFE.Eraze
                 m_kPool.RestoreElement(gameObject);
             }
         }
+
+        #region Variables
+
+        private Pool m_kPool;
+
+        private LineRenderer m_kLineRenderer;
+        private EdgeCollider2D m_kEdgeCollider;
+
+        private List<Vector2> m_lv2FingerPosition;
+
+        [HideInInspector]
+        public float m_fCurrentLength;
+
+        [SerializeField]
+        private bool m_bNormalLength;
+
+        [SerializeField]
+        bool m_bDinamicCreation;
+
+        [Header("Anchors")]
+        [SerializeField]
+        private GameObject m_goAnchor;
+        [SerializeField]
+        private bool m_bAnchors;
+        
+        private Vector2 m_v2Direction;
+        private eGesture m_eDirection;
+        private bool m_bDrawing;
+
+        #endregion
     }
 }

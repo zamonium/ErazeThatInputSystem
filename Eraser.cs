@@ -1,53 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MFE.Eraze
 {
     public class Eraser : BaseInput
     {
-        struct EnemySearch
-        {
-            public float distance;
-            public Transform transform;
-        }
-
-        public Pool m_kRubberPool;
-
-        private bool m_bCanErase;
-        private bool m_bIsErasing;
-
-        [SerializeField]
-        private float m_fRubberRadius; //must be the same as LinePrefab -> EdgeCollider2D-EdgeRadius
-
-        [SerializeField]
-        private float m_fDistanceBetweenRubberPoint;
-
-        private Vector3 m_v3OldRubberPosition;
-
-        [SerializeField]
-        private GameObject particle;
-
-        [SerializeField]
-        private AudioSource audioSource;
-
-        [SerializeField]
-        private float m_fDefaultMaxTimeRubber;
-        [SerializeField]
-        private float m_fTimeWarpMaxTimeRubber;
-        private float m_fMaxTimeRubber;
-        private float m_fCurrentUseRubber;
-        private float m_fCooldownTime;
-        private float m_fCooldown;
-
-        Camera cam;
-
         public delegate void EraserCallback();
         public static event EraserCallback OnFinishRubberPoints;
 
         private void Start()
         {
-            cam = Camera.main;
+            m_camera = Camera.main;
 
             BaseEnemy.OnEnemyDisabled += RestoreElements;
             PlayerController.OnPowerUp += PowerUp;
@@ -93,7 +55,7 @@ namespace MFE.Eraze
             if (GameManager.m_eState != eGameState.Playing)
                 return;
 
-            Vector3 v3NewRubberPosition = cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 v3NewRubberPosition = m_camera.ScreenToWorldPoint(Input.mousePosition);
             v3NewRubberPosition += Vector3.forward * 10; //to get it to z = 0
 
             if (m_bCanErase && m_fCurrentUseRubber > 0 && Vector2.Distance(m_v3OldRubberPosition, v3NewRubberPosition) > m_fDistanceBetweenRubberPoint)
@@ -346,5 +308,47 @@ namespace MFE.Eraze
 
             PlayerController.OnPowerUp -= PowerUp;
         }
+
+        #region Variables & Properties
+
+        struct EnemySearch
+        {
+            public float distance;
+            public Transform transform;
+        }
+
+        public Pool m_kRubberPool;
+
+        Camera m_camera;
+
+        [SerializeField]
+        private GameObject particle;
+
+        [SerializeField]
+        private AudioSource audioSource;
+        
+        private Vector3 m_v3OldRubberPosition;
+
+        [SerializeField]
+        private float m_fRubberRadius; //must be the same as LinePrefab -> EdgeCollider2D-EdgeRadius
+
+        [SerializeField]
+        private float m_fDistanceBetweenRubberPoint;
+
+        [SerializeField]
+        private float m_fDefaultMaxTimeRubber;
+        [SerializeField]
+        private float m_fTimeWarpMaxTimeRubber;
+        
+        private float m_fMaxTimeRubber;
+
+        private float m_fCurrentUseRubber;
+        private float m_fCooldownTime;
+        private float m_fCooldown;
+
+        private bool m_bCanErase;
+        private bool m_bIsErasing;
+
+        #endregion
     }
 }

@@ -1,17 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MFE.Eraze
 {
     public class InputControllerTutorial : InputController
     {
-        public bool AllowChangeMechanics { get; set; }
-
-        public bool StopLines { get; set; }
-
-        public bool OnlyHorizontal { get; set; }
-
         protected override eGesture getDirection()
         {
             Vector3 vTo = new Vector3(m_v2EndTouchPosition.x, m_v2EndTouchPosition.y, 0);
@@ -30,7 +22,6 @@ namespace MFE.Eraze
                     return result;
                 else
                     result = eGesture.N;
-
             }
             else
                 result = eGesture.N;
@@ -43,5 +34,15 @@ namespace MFE.Eraze
             if (AllowChangeMechanics)
                 base.CheckTap();
         }
+
+        #region Variables & Properties
+
+        public bool AllowChangeMechanics { get; set; }
+
+        public bool StopLines { get; set; }
+
+        public bool OnlyHorizontal { get; set; }
+
+        #endregion
     }
 }

@@ -30,55 +30,19 @@ namespace MFE.Eraze
 
     public class InputController : MonoBehaviour
     {
-        #region Variables
-
-        [SerializeField]
-        private Eraser m_kEraser;
-        [SerializeField]
-        private Writer m_kWriter;
-        [SerializeField]
-        private InfiniteWriter m_kInfiniteLine;
-
-        private bool m_bActive;
-
-        private BaseInput m_kCurrent;
-
-        private bool m_bIsInGesture;
-
-        private float m_fMinGestureDistance;
-
-        protected Vector2 m_v2BeginTouchPosition, m_v2EndTouchPosition;
-        private Vector3 m_v3BeginWorldPosition;
-
-        [SerializeField]
-        private float m_fMaxTapTime;
-        private float m_fTimeStart;
-
-        [SerializeField]
-        private AudioSource audioSource;
-        [SerializeField]
-        private AudioClip changeMechanicAudio;
-
-        private Camera cam;
-
-        #endregion
-
         public delegate void InputCallback();
         public static event InputCallback OnChangeMechanic;
 
-        public bool Active { get { return m_bActive; } }
-        public bool SpecialInputActive { get; set; }
-
         private void Awake()
         {
-            cam = Camera.main;
+            m_camera = Camera.main;
         }
 
         public void Init()
         {
             m_bIsInGesture = false;
 
-            m_fMinGestureDistance = Screen.width / 20;
+            m_fMinGestureDistance = Screen.width / 20; 
             Debug.Log("Minimum gesture distance " + m_fMinGestureDistance);
 
             ResetPositions();
@@ -107,16 +71,13 @@ namespace MFE.Eraze
 
             m_bActive = false;
 
-
             UIManager.Instance.ActivateMechanic(false);
             UIManager.Instance.ShowInfiniteLineContainer();
-
         }
 
         public void StartInfiniteLine()
         {
             m_bActive = true;
-
 
             SpecialInputActive = true;
 
@@ -140,7 +101,6 @@ namespace MFE.Eraze
             UIManager.Instance.HideInfiniteLineContainer();
 
             UIManager.Instance.ActivateMechanic(true);
-
         }
 
         public void ResetInfiniteLine()
@@ -181,7 +141,7 @@ namespace MFE.Eraze
                         SaveFirstPosition();
                     }
 
-                    if ((m_v2BeginTouchPosition != (Vector2)Input.mousePosition && Vector2.Distance(m_v2BeginTouchPosition, (Vector2)Input.mousePosition) >= m_fMinGestureDistance)
+                    if ((m_v2BeginTouchPosition != (Vector2)Input.mousePosition && Vector2.Distance(m_v2BeginTouchPosition, Input.mousePosition) >= m_fMinGestureDistance)
                         || Time.time > m_fTimeStart + m_fMaxTapTime)
                     {
                         ExecuteAction();
@@ -219,7 +179,7 @@ namespace MFE.Eraze
         private void SaveFirstPosition()
         {
             m_v2BeginTouchPosition = Input.mousePosition;
-            m_v3BeginWorldPosition = cam.ScreenToWorldPoint(m_v2BeginTouchPosition);
+            m_v3BeginWorldPosition = m_camera.ScreenToWorldPoint(m_v2BeginTouchPosition);
             m_v3BeginWorldPosition += Vector3.forward * 10;
         }
 
@@ -246,11 +206,11 @@ namespace MFE.Eraze
                 eRecognizedGesture = getDirection();
 
                 Debug.Log("Gesture " + eRecognizedGesture);
-                Vector3 rayWorld = cam.ScreenToWorldPoint(m_v2BeginTouchPosition);
+                Vector3 rayWorld = m_camera.ScreenToWorldPoint(m_v2BeginTouchPosition);
 
                 Vector3 oldRubberPosition = new Vector3(rayWorld.x, rayWorld.y, 0);
 
-                rayWorld = cam.ScreenToWorldPoint(m_v2EndTouchPosition);
+                rayWorld = m_camera.ScreenToWorldPoint(m_v2EndTouchPosition);
 
                 Vector3 newRubberPosition = new Vector3(rayWorld.x, rayWorld.y, 0);
 
@@ -340,8 +300,8 @@ namespace MFE.Eraze
 
         private void ChangeMechanic()
         {
-            if (audioSource && GameManager.m_eState == eGameState.Playing)
-                audioSource.PlayOneShot(changeMechanicAudio);
+            if (m_audioSource && GameManager.m_eState == eGameState.Playing)
+                m_audioSource.PlayOneShot(m_changeMechanicAudio);
 
             if (m_kCurrent == m_kWriter)
                 m_kCurrent = m_kEraser;
@@ -392,5 +352,40 @@ namespace MFE.Eraze
             if (m_kCurrent == m_kEraser)
                 ChangeMechanic();
         }
+
+        #region Variables & Properties
+
+        public bool Active { get { return m_bActive; } }
+        public bool SpecialInputActive { get; set; }
+
+        [SerializeField]
+        private Eraser m_kEraser;
+        [SerializeField]
+        private Writer m_kWriter;
+        [SerializeField]
+        private InfiniteWriter m_kInfiniteLine;
+
+        private BaseInput m_kCurrent;
+
+        private Camera m_camera;
+
+        [SerializeField]
+        private AudioSource m_audioSource;
+        [SerializeField]
+        private AudioClip m_changeMechanicAudio;
+
+        protected Vector2 m_v2BeginTouchPosition, m_v2EndTouchPosition;
+        private Vector3 m_v3BeginWorldPosition;
+
+        [SerializeField]
+        private float m_fMaxTapTime;
+
+        private float m_fTimeStart;
+        private float m_fMinGestureDistance;
+
+        private bool m_bActive;
+        private bool m_bIsInGesture;
+
+        #endregion
     }
 }

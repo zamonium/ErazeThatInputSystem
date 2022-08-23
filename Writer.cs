@@ -1,4 +1,3 @@
-using GooglePlayGames;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,34 +6,8 @@ namespace MFE.Eraze
 {
     public class Writer : BaseInput
     {
-        #region Variables
-
-        [SerializeField]
-        public Pool m_kPool;
-
-        private int m_iLinesCurrent;
-
-        private bool m_bActive;
-        private float m_fCoolDown;
-
-        private LineCreator m_kCurrentLine;
-
-        private const float mk_fChunkLength = 3f;
-
-        [SerializeField]
-        GameObject m_LeftErrorPanel;
-
-        [SerializeField]
-        AudioSource audioSource;
-        [SerializeField]
-        List<AudioClip> writeAudio;
-
-        #endregion
-
         public delegate void WriterCallback();
         public static event WriterCallback OnDrawLine;
-
-        public bool CanWrite { get { return m_iLinesCurrent > 0; } }
 
         private void Start()
         {
@@ -43,7 +16,6 @@ namespace MFE.Eraze
             UIManager.Instance.UpdateLinesUsable(m_iLinesCurrent);
 
             PlayerController.OnPowerUp += PowerUp;
-
 
             Activate(true);
         }
@@ -71,7 +43,6 @@ namespace MFE.Eraze
             }
         }
 
-
         private void PowerUp(bool bActive)
         {
             if (PlayerController.Instance.m_ePowerUp != ePowerUp.TimeWarp)
@@ -93,7 +64,6 @@ namespace MFE.Eraze
                 m_fCoolDown = Time.time + fNewCooldown;
             }
         }
-
 
         public override void Action(Vector2 v2BeginTouch, Vector3 v3BeginWorld, eGesture eDirection)
         {
@@ -178,7 +148,6 @@ namespace MFE.Eraze
                 return;
             }
 
-
             float fX = GetXOffset(v2NewPosition);
 
             if (fX != 1 && fX != -1)
@@ -208,11 +177,6 @@ namespace MFE.Eraze
             }
             else
             {
-                //make maybe ui signal that can't write without anchors
-
-                //or even better add a bool check to see if it can write 
-                //and in this case Anchorpos = pos.x mod 3 if <=1.5 else (pox mod 3) + 1 
-
                 UIManager.Instance.ShowInputError(v2NewPosition, eInputErrortype.NoWriteAnchor);
                 Debug.Log("Input error no anchor");
 
@@ -230,11 +194,11 @@ namespace MFE.Eraze
             m_kCurrentLine = m_kPool.GetElement().GetComponent<LineCreator>();
             m_kCurrentLine.CreateLine(v2NewPosition, eDirection, m_kPool);
 
-            if (audioSource)
+            if (m_audioSource)
             {
-                AudioClip toBePlayed = writeAudio[Random.Range(0, writeAudio.Count)];
+                AudioClip toBePlayed = m_writeAudio[Random.Range(0, m_writeAudio.Count)];
 
-                audioSource.PlayOneShot(toBePlayed);
+                m_audioSource.PlayOneShot(toBePlayed);
             }
 
             DataManager.playerData.iLinesDrawed++;
@@ -333,6 +297,34 @@ namespace MFE.Eraze
         private void OnDestroy()
         {
             PlayerController.OnPowerUp -= PowerUp;
+
         }
+
+        #region Variables & Properties
+
+        public bool CanWrite { get { return m_iLinesCurrent > 0; } }
+
+        private const float mk_fChunkLength = 3f;
+
+        [SerializeField]
+        public Pool m_kPool;
+
+        private LineCreator m_kCurrentLine;
+
+        [SerializeField]
+        private GameObject m_LeftErrorPanel;
+
+        [SerializeField]
+        private AudioSource m_audioSource;
+        [SerializeField]
+        private List<AudioClip> m_writeAudio;
+
+        private float m_fCoolDown;
+        
+        private int m_iLinesCurrent;
+        
+        private bool m_bActive;
+
+        #endregion
     }
 }

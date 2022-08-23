@@ -1,23 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MFE.Eraze
 {
     public class DisableCollision : MonoBehaviour
     {
-        private Rigidbody2D m_kRigidbody;
-
-        [SerializeField]
-        SpriteRenderer trailRenderer;
-
         void Awake()
         {
             m_kRigidbody = GetComponent<Rigidbody2D>();
 
             GameManager.OnRestart += SimulatePhysics;
 
-            if (trailRenderer)
+            if (m_kTrailRenderer)
                 gameObject.transform.Rotate(Vector3.forward, Random.Range(0, 360));
         }
 
@@ -25,7 +18,7 @@ namespace MFE.Eraze
         {
             m_kRigidbody.simulated = true;
 
-            if (trailRenderer)
+            if (m_kTrailRenderer)
                 gameObject.transform.Rotate(Vector3.forward, Random.Range(0, 360));
         }
 
@@ -40,5 +33,14 @@ namespace MFE.Eraze
         {
             GameManager.OnRestart -= SimulatePhysics;
         }
+
+        #region Variables & Properties
+
+        private Rigidbody2D m_kRigidbody;
+
+        [SerializeField]
+        SpriteRenderer m_kTrailRenderer;
+
+        #endregion
     }
 }

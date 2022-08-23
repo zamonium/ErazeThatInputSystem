@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,14 +5,18 @@ namespace MFE.Eraze
 {
     public class LinePool : Pool
     {
-        [SerializeField]
-        List<GameObject> Lines;
-
         protected override void Start()
         {
-            m_goReference = Lines[DataManager.playerData.iCurrentLine];
+            m_goReference = m_lLines[DataManager.playerData.iCurrentLine];
 
             base.Start();
         }
-	}
+
+        #region Variables & Properties
+
+        [SerializeField]
+        List<GameObject> m_lLines;
+        
+        #endregion
+    }
 }
